@@ -1,0 +1,3 @@
+[submodule "SSD-Tensorflow"]
+	path = SSD-Tensorflow
+	url = git@github.com:sugyan/SSD-Tensorflow.git
