@@ -27,7 +27,8 @@ def download_and_extract():
 def main(argv=None):
     # download_and_extract()
     cascades_dir = os.path.normpath(os.path.join(cv2.__file__, '..', '..', '..', '..', 'share', 'OpenCV', 'haarcascades'))
-    cascade = cv2.CascadeClassifier(os.path.join(cascades_dir, 'haarcascade_frontalface_default.xml'))
+    face_cascade = cv2.CascadeClassifier(os.path.join(cascades_dir, 'haarcascade_frontalface_default.xml'))
+    eyes_cascade = cv2.CascadeClassifier(os.path.join(cascades_dir, 'haarcascade_eye.xml'))
 
     folds_dir = os.path.join(DIRECTORY, 'FDDB-folds')
     for filename in os.listdir(folds_dir):
@@ -39,35 +40,52 @@ def main(argv=None):
                 if len(img_file) == 0:
                     break
                 num = int(f.readline())
-                faces = []
+                regions = []
                 for _ in range(num):
-                    faces.append(f.readline().strip())
-                print(img_file, num, faces)
+                    regions.append(f.readline().strip())
+                print(img_file, num, regions)
                 img = cv2.imread(os.path.join(DIRECTORY, '{}.jpg'.format(img_file)))
-                detected = cascade.detectMultiScale(img)
 
-                for face in detected:
-                    hw = int((face[2] + 1.0) / 2.0)
-                    hh = int((face[3] + 1.0) / 2.0)
-                    cv2.ellipse(
-                        img,
-                        (face[0] + hw, face[1] + hh),
-                        (hw, hh),
-                        0,
-                        0, 360,
-                        (255, 255, 0))
-                for face in faces:
-                    e = face.split(' ')
-                    cv2.ellipse(
-                        img,
-                        (int(float(e[3])), int(float(e[4]))),
-                        (int(float(e[0])), int(float(e[1]))),
-                        float(e[2]) / math.pi * 180.0,
-                        0, 360,
-                        (0, 255, 0))
-                cv2.imshow('image', img)
-                cv2.waitKey(0)
-                cv2.destroyAllWindows()
+                for region in regions:
+                    e = region.split(' ')
+                    size = max(float(e[0]), float(e[1])) * 1.1
+                    # skip if face is too small
+                    if size < 60.0:
+                        break
+                    center = (int(float(e[3]) + .5), int(float(e[4]) + .5))
+                    angle = float(e[2]) / math.pi * 180.0
+                    if angle < 0:
+                        angle += 180.0
+                    M = cv2.getRotationMatrix2D(center, angle - 90.0, 1)
+                    M[0, 2] -= float(e[3]) - size
+                    M[1, 2] -= float(e[4]) - size
+                    # crop to detect frontalface
+                    target = cv2.warpAffine(img, M, (int(size * 2 + .5), int(size * 2 + .5)))
+                    faces = face_cascade.detectMultiScale(target)
+                    if len(faces) != 1:
+                        print('{} faces found...'.format(len(faces)))
+                        break
+                    rect = faces[0]
+                    cv2.rectangle(target, tuple(rect[0:2]), tuple(rect[0:2] + rect[2:4]), (0, 255, 0))
+                    face = target[rect[1]:rect[1] + rect[3], rect[0]:rect[0] + rect[2]]
+                    eyes = []
+                    for eye in eyes_cascade.detectMultiScale(face):
+                        # reject false detection
+                        if eye[1] > face.shape[0] / 2:
+                            break
+                        eyes.append(eye)
+                    if len(eyes) != 2:
+                        print('{} eyes found...'.format(len(faces)))
+                        break
+                    for eye in eyes:
+                        cv2.rectangle(
+                            target,
+                            tuple(rect[0:2] + eye[0:2]),
+                            tuple(rect[0:2] + eye[0:2] + eye[2:4]),
+                            (0, 255, 255))
+                    cv2.imshow('target', target)
+                    cv2.waitKey(0)
+                    cv2.destroyAllWindows()
         break
 
 
