@@ -15,6 +15,24 @@ CASCADES_DIR = os.path.normpath(os.path.join(cv2.__file__, '..', '..', '..', '..
 FACE_CASCADE = cv2.CascadeClassifier(os.path.join(CASCADES_DIR, 'haarcascade_frontalface_default.xml'))
 EYES_CASCADE = cv2.CascadeClassifier(os.path.join(CASCADES_DIR, 'haarcascade_eye.xml'))
 
+EXCLUDES = set([
+    '2002/07/19/big/img_445',
+    '2002/07/21/big/img_76',
+    '2002/07/22/big/img_152',
+    '2002/07/26/big/img_513',
+    '2002/07/29/big/img_136',
+    '2002/07/31/big/img_898',
+    '2002/08/05/big/img_3591',
+    '2002/08/07/big/img_1576',
+    '2002/08/16/big/img_81',
+    '2002/08/16/big/img_1055',
+    '2002/08/18/big/img_293',
+    '2003/01/01/big/img_547',
+    '2003/01/14/big/img_951',
+    '2003/01/15/big/img_640',
+    '2003/01/15/big/img_17',
+])
+
 
 def download_and_extract():
     download = tf.contrib.learn.datasets.base.maybe_download
@@ -112,14 +130,17 @@ def main(argv=None):
         with open(os.path.join(folds_dir, filename)) as f:
             for line in f:
                 img_file = line.strip()
+                print(img_file)
                 if len(img_file) == 0:
                     break
                 num = int(f.readline())
                 lines = []
                 for _ in range(num):
                     lines.append(f.readline().strip())
+                if img_file in EXCLUDES:
+                    continue
+                # load image, detect faces
                 img = cv2.imread(os.path.join(DIRECTORY, '{}.jpg'.format(img_file)))
-
                 detected = detect_faces(img, lines)
                 # skip if all faces waren't detected
                 if len(detected) != len(lines):
@@ -130,7 +151,7 @@ def main(argv=None):
                             img,
                             tuple([int(obj['xmin'] + .5), int(obj['ymin'] + .5)]),
                             tuple([int(obj['xmax'] + .5), int(obj['ymax'] + .5)]),
-                            [0, 255, 0] if obj['class'] == 'face' else [0, 255, 255]
+                            [0, 255, 0] if obj['class'] == 'face' else [255, 255, 0]
                         )
                 cv2.imshow(img_file, img)
                 cv2.waitKey(0)
