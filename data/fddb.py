@@ -34,6 +34,10 @@ EXCLUDES = set([
     '2003/01/15/big/img_17',
 ])
 
+flags = tf.app.flags
+flags.DEFINE_string('output_dir', os.path.dirname(__file__), 'Path to directory to output TFRecords.')
+FLAGS = flags.FLAGS
+
 
 def download_and_extract():
     download = tf.contrib.learn.datasets.base.maybe_download
@@ -121,13 +125,26 @@ def detect_faces(img, lines):
     return results
 
 
+def write_record(writer, img, data):
+    # TODO
+    example = tf.train.Example(features=tf.train.Features(feature={
+        'image/height': tf.train.Feature(int64_list=tf.train.Int64List(value=[img.shape[0]])),
+        'image/width': tf.train.Feature(int64_list=tf.train.Int64List(value=[img.shape[1]])),
+    }))
+    writer.write(example.SerializeToString())
+
+
 def main(argv=None):
     # download_and_extract()
-
+    writers = {
+        'train': tf.python_io.TFRecordWriter(os.path.join(FLAGS.output_dir, 'fddb_train.record')),
+        'val': tf.python_io.TFRecordWriter(os.path.join(FLAGS.output_dir, 'fddb_val.record')),
+    }
     folds_dir = os.path.join(DIRECTORY, 'FDDB-folds')
     for filename in os.listdir(folds_dir):
         if not filename.endswith('-ellipseList.txt'):
             continue
+        writer = writers['val'] if 'fold-10' in filename else writers['train']
         with open(os.path.join(folds_dir, filename)) as f:
             for line in f:
                 img_file = line.strip()
@@ -146,17 +163,20 @@ def main(argv=None):
                 # skip if all faces waren't detected
                 if len(detected) != len(lines):
                     continue
-                for results in detected:
-                    for obj in results:
-                        cv2.rectangle(
-                            img,
-                            tuple([int(obj['xmin'] + .5), int(obj['ymin'] + .5)]),
-                            tuple([int(obj['xmax'] + .5), int(obj['ymax'] + .5)]),
-                            [0, 255, 0] if obj['class'] == 'face' else [255, 255, 0]
-                        )
-                cv2.imshow(img_file, img)
-                cv2.waitKey(0)
-                cv2.destroyAllWindows()
+                write_record(writer, img, detected)
+                # for results in detected:
+                #     for obj in results:
+                #         cv2.rectangle(
+                #             img,
+                #             tuple([int(obj['xmin'] + .5), int(obj['ymin'] + .5)]),
+                #             tuple([int(obj['xmax'] + .5), int(obj['ymax'] + .5)]),
+                #             [0, 255, 0] if obj['class'] == 'face' else [255, 255, 0]
+                #         )
+                # cv2.imshow(img_file, img)
+                # cv2.waitKey(0)
+                # cv2.destroyAllWindows()
+    for writer in writers.values():
+        writer.close()
 
 
 if __name__ == '__main__':
