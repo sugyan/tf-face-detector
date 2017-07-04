@@ -1,9 +1,9 @@
 backports.weakref==1.0rc1
 bleach==1.5.0
 html5lib==0.9999999
-Markdown==2.2.0
+Markdown==2.6.8
 numpy==1.13.0
 protobuf==3.3.0
 six==1.10.0
-tensorflow==1.2.0
+tensorflow==1.2.1
 Werkzeug==0.12.2
