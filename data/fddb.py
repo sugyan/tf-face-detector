@@ -135,7 +135,7 @@ def write_record(writer, img, data):
 
 
 def main(argv=None):
-    # download_and_extract()
+    download_and_extract()
     writers = {
         'train': tf.python_io.TFRecordWriter(os.path.join(FLAGS.output_dir, 'fddb_train.record')),
         'val': tf.python_io.TFRecordWriter(os.path.join(FLAGS.output_dir, 'fddb_val.record')),
