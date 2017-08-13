@@ -99,3 +99,9 @@ ENV/
 
 # mypy
 .mypy_cache/
+
+
+# Others
+ssd_inception_v2_fddb.config.bak
+ssd_inception_v2_coco_11_06_2017.tar.gz
+ssd_inception_v2_coco_11_06_2017/

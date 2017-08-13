@@ -1,0 +1,9 @@
+item {
+  id: 1
+  name: 'face'
+}
+
+item {
+  id: 2
+  name: 'eye'
+}
