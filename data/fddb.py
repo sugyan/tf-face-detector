@@ -125,12 +125,40 @@ def detect_faces(img, lines):
     return results
 
 
-def write_record(writer, img, data):
-    # TODO
-    example = tf.train.Example(features=tf.train.Features(feature={
-        'image/height': tf.train.Feature(int64_list=tf.train.Int64List(value=[img.shape[0]])),
-        'image/width': tf.train.Feature(int64_list=tf.train.Int64List(value=[img.shape[1]])),
-    }))
+def write_record(writer, img, filepath, data):
+    h, w, _ = img.shape
+    xmin, xmax, ymin, ymax = [], [], [], []
+    class_text, class_label = [], []
+    label_map_dict = {
+        'face': 1,
+        'eye': 2,
+    }
+    for face in data:
+        for bbox in face:
+            label = label_map_dict[bbox['class']]
+            xmin.append(bbox['xmin'] / w)
+            xmax.append(bbox['xmax'] / w)
+            ymin.append(bbox['ymin'] / h)
+            ymax.append(bbox['ymax'] / h)
+            class_text.append(bbox['class'].encode('utf-8'))
+            class_label.append(label)
+    with open(filepath, 'rb') as f:
+        encoded = f.read()
+    feature = {
+        'image/height': tf.train.Feature(int64_list=tf.train.Int64List(value=[h])),
+        'image/width': tf.train.Feature(int64_list=tf.train.Int64List(value=[w])),
+        'image/filename': tf.train.Feature(bytes_list=tf.train.BytesList(value=[filepath.encode('utf-8')])),
+        'image/source_id': tf.train.Feature(bytes_list=tf.train.BytesList(value=[filepath.encode('utf-8')])),
+        'image/encoded': tf.train.Feature(bytes_list=tf.train.BytesList(value=[encoded])),
+        'image/format': tf.train.Feature(bytes_list=tf.train.BytesList(value=['jpeg'.encode('utf-8')])),
+        'image/object/bbox/xmin': tf.train.Feature(float_list=tf.train.FloatList(value=xmin)),
+        'image/object/bbox/xmax': tf.train.Feature(float_list=tf.train.FloatList(value=xmax)),
+        'image/object/bbox/ymin': tf.train.Feature(float_list=tf.train.FloatList(value=ymin)),
+        'image/object/bbox/ymax': tf.train.Feature(float_list=tf.train.FloatList(value=ymax)),
+        'image/object/class/text': tf.train.Feature(bytes_list=tf.train.BytesList(value=class_text)),
+        'image/object/class/label': tf.train.Feature(int64_list=tf.train.Int64List(value=class_label)),
+    }
+    example = tf.train.Example(features=tf.train.Features(feature=feature))
     writer.write(example.SerializeToString())
 
 
@@ -158,12 +186,13 @@ def main(argv=None):
                 if img_file in EXCLUDES:
                     continue
                 # load image, detect faces
-                img = cv2.imread(os.path.join(DIRECTORY, '{}.jpg'.format(img_file)))
+                filepath = os.path.join(DIRECTORY, '{}.jpg'.format(img_file))
+                img = cv2.imread(filepath)
                 detected = detect_faces(img, lines)
                 # skip if all faces waren't detected
                 if len(detected) != len(lines):
                     continue
-                write_record(writer, img, detected)
+                write_record(writer, img, filepath, detected)
                 # for results in detected:
                 #     for obj in results:
                 #         cv2.rectangle(
