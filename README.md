@@ -26,3 +26,18 @@ $ python object_detection/train.py \
       --train_dir=../train \
       --pipeline_config_path=../ssd_inception_v2_faces.config
 ```
+
+
+## Export graph
+
+```sh
+export PYTHONPATH=${PYTHONPATH}:$(pwd)/models:$(pwd)/models/slim
+export CHECKPOINT_NUMBER=<target checkpoint number>
+export EXPORT_DIRECTORY=<path to output graph>
+python models/object_detection/export_inference_graph.py \
+    --input_type=encoded_image_string_tensor \
+    --pipeline_config_path=ssd_inception_v2_fddb.config \
+    --trained_checkpoint_prefix=train/model.ckpt-${CHECKPOINT_NUMBER} \
+    --output_directory=${EXPORT_DIRECTORY}
+python scripts/visualize_result.py --model_directory=${EXPORT_DIRECTORY}
+```
