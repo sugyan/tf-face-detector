@@ -11,11 +11,19 @@ Face Detector using [Tensorflow Object Detection API](https://github.com/tensorf
   - cv2 >= 3.3 (for generating dataset)
 
 
+## Setup
+
+```
+git submodule update --init
+pip3 install -r requirements.txt
+```
+
+
 ## FDDB dataset
 
 http://vis-www.cs.umass.edu/fddb/
 
-To download data and generate tfrecord dataset:
+To download data and generate tfrecord dataset (needed `cv2`):
 
 ```
 python data/fddb.py
@@ -50,5 +58,4 @@ python models/object_detection/export_inference_graph.py \
     --pipeline_config_path=ssd_inception_v2_fddb.config \
     --trained_checkpoint_prefix=train/model.ckpt-${CHECKPOINT_NUMBER} \
     --output_directory=${EXPORT_DIRECTORY}
-python scripts/visualize_result.py --model_directory=${EXPORT_DIRECTORY}
 ```
