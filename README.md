@@ -1,6 +1,10 @@
-# tf-face-detector
+# TF Face Detector
 
 Face Detector using [Tensorflow Object Detection API](https://github.com/tensorflow/models/tree/master/object_detection)
+
+![](https://user-images.githubusercontent.com/80381/29495837-2c0b05de-8602-11e7-8d38-c792e72e51d5.jpg)
+
+Web DEMO: https://tf-face-detector.herokuapp.com/
 
 
 ## Prerequisite
