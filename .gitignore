@@ -102,4 +102,4 @@ ENV/
 
 
 # Others
-ssd_inception_v2_fddb.config.bak
+ssd_inception_v2_fddb.config

@@ -1,32 +1,43 @@
 # tf-face-detector
 
-## FDDB
+Face Detector using [Tensorflow Object Detection API](https://github.com/tensorflow/models/tree/master/object_detection)
+
+
+## Prerequisite
+
+- Python >= 3.x
+  - TensorFlow >= 1.2
+  - Pillow >= 4.2.1 (for visualizing results)
+  - cv2 >= 3.3 (for generating dataset)
+
+
+## FDDB dataset
 
 http://vis-www.cs.umass.edu/fddb/
 
+To download data and generate tfrecord dataset:
+
 ```
-$ python data/fddb.py
+python data/fddb.py
 ```
 
 
 ## Training
 
-
-```
-### Download COCO-pretrained SSD with Inception V2 model
-$ cd ./data
-$ wget http://download.tensorflow.org/models/object_detection/ssd_inception_v2_coco_11_06_2017.tar.gz
-$ tar -xvf ssd_inception_v2_coco_11_06_2017.tar.gz
-
-### Training
-$ cd ../models
-$ protoc object_detection/protos/*.proto --python_out=.
-$ export PYTHONPATH=$PYTHONPATH:`pwd`:`pwd`/slim
-$ python object_detection/train.py \
-      --train_dir=../train \
-      --pipeline_config_path=../ssd_inception_v2_faces.config
+```sh
+perl -pe "s|PATH_TO_BE_CONFIGURED|${PWD}/data|g" ./ssd_inception_v2_fddb.config.base > ssd_inception_v2_fddb.config
+(cd models && protoc object_detection/protos/*.proto --python_out=.)
+export PYTHONPATH=$PYTHONPATH:`pwd`:`pwd`/slim
+python object_detection/train.py \
+    --train_dir=../train \
+    --pipeline_config_path=../ssd_inception_v2_faces.config
 ```
 
+or
+
+```sh
+./run_local.sh
+```
 
 ## Export graph
 

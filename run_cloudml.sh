@@ -37,7 +37,7 @@ fi
 if gsutil -q stat gs://${GCS_BUCKET}/data/ssd_inception_v2_fddb.config; then
     echo "ssd_inception_v2_fddb.config exists."
 else
-    perl -i.bak -pe "s|PATH_TO_BE_CONFIGURED|"gs://${GCS_BUCKET}"/data|g" ./ssd_inception_v2_fddb.config
+    perl -pe "s|PATH_TO_BE_CONFIGURED|"gs://${GCS_BUCKET}"/data|g" ./ssd_inception_v2_fddb.config.base > ssd_inception_v2_fddb.config
     gsutil cp ssd_inception_v2_fddb.config gs://${YOUR_GCS_BUCKET}/data/ssd_inception_v2_fddb.config
 fi
 
