@@ -42,7 +42,7 @@ perl -pe "s|PATH_TO_BE_CONFIGURED|${PWD}/data|g" ./ssd_inception_v2_fddb.config.
 export PYTHONPATH=$PYTHONPATH:`pwd`:`pwd`/slim
 python object_detection/train.py \
     --train_dir=../train \
-    --pipeline_config_path=../ssd_inception_v2_faces.config
+    --pipeline_config_path=../ssd_inception_v2_fddb.config
 ```
 
 or
